@@ -28,17 +28,21 @@ bot.command('start', async ({ chat: { id }, from }) => {
         [{
           text: "🎬 Prossimamente 🎬",
           callback_data: "coming_soon"
+        }],
+        [{
+          text: "🗃️ La tua lista 🗃️ (disabilitato)",
+          callback_data: "movies_list"
         }]
       ]
     }
   })
 })
 
-bot.action('movies_in_theaters', async ({ chat: { id } }) => {
-  // ctx.answerCbQuery('ciao')
+bot.action('movies_in_theaters', async ({ chat: { id }, answerCbQuery }) => {
+  answerCbQuery('🍿 Ecco i film al cinema!')
   const { data } = await db.getNowPlayingMovies('it-IT', 1, 'IT')
   const movies = data.results
-  telegram.sendMessage(id, 'Ecco i film al cinema!', {
+  telegram.sendMessage(id, '🍿 Ecco i film al cinema!', {
     reply_markup: {
       inline_keyboard: movies.map(({ id, title }) => {
         return [{
@@ -50,10 +54,11 @@ bot.action('movies_in_theaters', async ({ chat: { id } }) => {
   })
 })
 
-bot.action('coming_soon', async ({ chat: { id } }) => {
+bot.action('coming_soon', async ({ chat: { id }, answerCbQuery }) => {
+  answerCbQuery('🎬 Ecco i film che usciranno Prossimamente!')
   const { data } = await db.getUpcomingMovies('it-IT', 1, 'IT')
   const movies = data.results
-  telegram.sendMessage(id, 'Ecco i film che usciranno Prossimamente!', {
+  telegram.sendMessage(id, '🎬 Ecco i film che usciranno Prossimamente!', {
     reply_markup: {
       inline_keyboard: movies.map(({ id, title }) => {
         return [{
@@ -67,27 +72,25 @@ bot.action('coming_soon', async ({ chat: { id } }) => {
 
 bot.action(new RegExp("^movie_"), async (ctx) => {
   const id = ctx.match.input.substring(6)
-  const  response = await db.getMovie(id, 'it-IT')
+  const response = await db.getMovie(id, 'it-IT')
   const movie = response.data
+
+  ctx.answerCbQuery('🎞️ ' + movie.title)
 
   const stars = '⭐'.repeat((movie.vote_average / 2).toFixed())
   const generi = movie.genres.map(el => el.name).toString().split(",").join(", ")
 
   telegram.sendPhoto(ctx.chat.id, 'https://image.tmdb.org/t/p/original/' + movie.poster_path, {
     parse_mode: 'markdown',
-    caption: `*${movie.title}*\n${movie.vote_average ? '\n*Voto:* ' + stars : ''}\n*Generi:* ${generi}\n\n${movie.overview}`,
-    // reply_markup: {
-    //   inline_keyboard: [
-    //     [{
-    //       text: "🍿 Film al cinema 🍿",
-    //       callback_data: "movies_in_theaters"
-    //     }],
-    //     [{
-    //       text: "🎬 Prossimamente 🎬",
-    //       callback_data: "coming_soon"
-    //     }]
-    //   ]
-    // }
+    caption: `*🎞️ ${movie.title}*\n${movie.vote_average ? '\n*☑️ Voto:* ' + stars : ''}\n*🎭 Generi:* ${generi}\n\n${movie.overview}`,
+    reply_markup: {
+      inline_keyboard: [
+        [{
+          text: "👍 Aggiungi alla lista (disabilitato).",
+          callback_data: "movies_in_theaters"
+        }]
+      ]
+    }
   })
 })
 
