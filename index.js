@@ -13,10 +13,11 @@ const telegram = new Telegram(TOKEN)
 const db = api(API)
 
 bot.command('start', async ({ chat: { id }, from }) => {
-  const botInfo = await telegram.getMe()
-  const { photos: [[{ file_id }]] } = await telegram.getUserProfilePhotos(botInfo.id)
+//   const botInfo = await telegram.getMe()
+//   const { photos: [[{ file_id }]] } = await telegram.getUserProfilePhotos(botInfo.id)
+  const photo = 'https://i.imgur.com/LDyLeJX.jpg'
 
-  telegram.sendPhoto(id, file_id, {
+  telegram.sendPhoto(id, photo, {
     caption: 'Benvenuto ' + from.first_name + '! \nSono il tuo concierge e sarò al tuo servizio.',
     reply_markup: {
       inline_keyboard: [
@@ -116,3 +117,4 @@ bot.action(new RegExp('^movie_'), async (ctx) => {
 })
 
 bot.launch()
+console.log('🍿 Il concierge al suo servizio!')
